@@ -14,8 +14,10 @@ class Board:
         self.dimensions = dimensions
         self.position = position
         self.cell_size = count_digits(self.dimensions.x * self.dimensions.y)
-        len_of_placeholder = count_digits(self.dimensions.x * self.dimensions.y)
-        self.matrix = [['_' * len_of_placeholder for _j in range(self.dimensions.x)] for _i in range(self.dimensions.y)]
+        self.placeholder = '_' * self.cell_size
+        self.position_mark = ' ' * (self.cell_size - 1) + 'X'
+        self.visited = ' ' * (self.cell_size - 1) + '*'
+        self.matrix = [[self.placeholder for _j in range(self.dimensions.x)] for _i in range(self.dimensions.y)]
 
     def get_x_dim(self):
         return self.dimensions.x
@@ -27,9 +29,9 @@ class Board:
         msg = "Enter the knight's starting position: "
         point = handle_input(msg, lambda p: p.x in range(1, self.dimensions.x + 1) and p.y in range(1, self.dimensions.y + 1))
         self.position = Position(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
-        self.matrix[self.position.y][self.position.x] = ' ' * (self.cell_size - 1) + 'X'
+        self.matrix[self.position.y][self.position.x] = self.position_mark
 
-    def mark_possible_moves(self):
+    def warnsdorff(self):
         moves = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]
         for move in moves:
             row = self.position.y + move[0]
@@ -38,7 +40,17 @@ class Board:
                 pass
             else:
                 try:
-                    self.matrix[row][col] = ' ' * (self.cell_size - 1) + 'O'
+                    count = -1
+                    for mv in moves:
+                        r = row + mv[0]
+                        c = col + mv[1]
+                        if r < 0 or c < 0:
+                            pass
+                        elif c >= self.dimensions.x or r >= self.dimensions.y:
+                            pass
+                        else:
+                            count += 1
+                    self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
                 except IndexError:
                     pass
 
@@ -109,7 +121,7 @@ def count_digits(num):
 def main():
     board = make_board()
     board.place_knight()
-    board.mark_possible_moves()
+    board.warnsdorff()
     print('Here are the possible moves:')
     print(board)
 

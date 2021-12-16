@@ -54,8 +54,8 @@ class Board:
                 except IndexError:
                     pass
 
-    def print_user_friendly_coordinate(self):
-        print(f'row: {self.dimensions.y - self.position.y}, col: {self.position.x + 1}')
+    def get_user_friendly_coordinate(self):
+        return f'row: {self.dimensions.y - self.position.y}, col: {self.position.x + 1}'
 
     def __str__(self) -> str:
         result = []

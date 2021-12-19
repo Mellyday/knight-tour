@@ -41,18 +41,30 @@ class Board:
                 self.matrix[i][j] = self.placeholder
         self.warnsdorff()
 
+    def move_is_illegal(self, pos: Point):
+        """
+        IMPORTANT! this does not flag all illegal moves. It only flag illegal moves in one of the following cases:
+        1. The position is not outside the board (eg. if pos.x is less than 0 or larger than the dimension of the board, then it's out of bounds)
+        2. The position has not been previously visited.
+        3. The position is not our current location
+        :param pos:
+        :return:
+        """
+        if pos.x < 0 or pos.y < 0:
+            return True
+        elif pos.x >= self.dimensions.x or pos.y >= self.dimensions.y:
+            return True
+        elif self.matrix[pos.y][pos.x] == self.position_mark or self.matrix[pos.y][pos.x] == self.visited:
+            return True
+        return False
+
     def warnsdorff(self):
         for move in MOVES:
             row = self.position.y + move[0]
             col = self.position.x + move[1]
             pos = Point(col, row)
-            if row < 0 or col < 0:
-                pass
-            elif row >= self.dimensions.y or col >= self.dimensions.x:
-                pass
-            elif self.matrix[row][col] == self.position_mark or self.matrix[row][col] == self.visited:
-                pass
-            else:
+            move_is_illegal = self.move_is_illegal(pos)
+            if not move_is_illegal:
                 count = self.warnsdorff_count(pos)
                 self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
 
@@ -61,13 +73,8 @@ class Board:
         for move in MOVES:
             row = pos.y + move[0]
             col = pos.x + move[1]
-            if row < 0 or col < 0:
-                continue
-            elif col >= self.dimensions.x or row >= self.dimensions.y:
-                continue
-            elif self.matrix[row][col] == self.position_mark or self.matrix[row][col] == self.visited:
-                continue
-            else:
+            move_is_illegal = self.move_is_illegal(Point(col, row))
+            if not move_is_illegal:
                 count += 1
         return count
 

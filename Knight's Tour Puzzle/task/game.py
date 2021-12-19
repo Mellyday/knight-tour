@@ -26,7 +26,7 @@ class Board:
     def place_knight(self):
         msg = "Enter the knight's starting position: "
         point = handle_input(msg, lambda p: p.x in range(1, self.dimensions.x + 1) and p.y in range(1, self.dimensions.y + 1))
-        pos = Point(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
+        pos = Point(*get_computer_readable_position(self, point))
         self.update_position(pos)
 
     def make_a_move(self, pos: Point):
@@ -147,20 +147,6 @@ def get_computer_readable_position(board: Board, pos: UserReadablePoint) -> Poin
     return Point(pos.x - 1, board.dimensions.y - pos.y)
 
 
-def convert_coordinate(coord, row_len, row_or_col):
-    """
-    @params
-    :param coord: raw coordinate from user input
-    :param row_len: number of rows of the board
-    :param row_or_col: the string 'row' if you are converting row, and the string 'col' if you are converting col
-    :return: an index in the form of integer
-    """
-    if row_or_col == 'row':
-        return row_len - coord
-    if row_or_col == 'col':
-        return coord - 1
-
-
 def count_digits(num):
     """
     This function return the number of digit num has.
@@ -191,7 +177,8 @@ def main():
                 break
 
         user_input = list(map(int, input('Enter your next move: ').split()))
-        pos = Point(convert_coordinate(user_input[0], board.dimensions.y, 'col'), convert_coordinate((user_input[1]), board.dimensions.y, 'row'))
+        user_readable_point = UserReadablePoint(*user_input)
+        pos = Point(*get_computer_readable_position(board, user_readable_point))
 
         if pos not in possible_moves:
             print('Invalid move! ')

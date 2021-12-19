@@ -5,14 +5,12 @@ from typing import Optional, Callable
 
 INVALID_INPUT_ERROR_MSG = 'Invalid dimensions!'
 MOVES = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]
-Dimensions = namedtuple('Dimensions', 'x y')
-Position = namedtuple('Position', 'x y')
-UserReadablePosition = namedtuple('UserReadablePosition', 'x y')
+UserReadablePoint = namedtuple('UserReadablePoint', 'x y')
 Point = namedtuple('Point', 'x y')
 
 
 class Board:
-    def __init__(self, dimensions: Dimensions, position: Optional[Position] = None):
+    def __init__(self, dimensions: Point, position: Optional[Point] = None):
         self.dimensions = dimensions
         self.position = position
         self.cell_size = count_digits(self.dimensions.x * self.dimensions.y)
@@ -21,17 +19,17 @@ class Board:
         self.visited = ' ' * (self.cell_size - 1) + '*'
         self.matrix = [[self.placeholder for _j in range(self.dimensions.x)] for _i in range(self.dimensions.y)]
 
-    def update_position(self, pos: Position):
+    def update_position(self, pos: Point):
         self.position = pos
         self.matrix[self.position.y][self.position.x] = self.position_mark
 
     def place_knight(self):
         msg = "Enter the knight's starting position: "
         point = handle_input(msg, lambda p: p.x in range(1, self.dimensions.x + 1) and p.y in range(1, self.dimensions.y + 1))
-        pos = Position(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
+        pos = Point(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
         self.update_position(pos)
 
-    def make_a_move(self, pos: Position):
+    def make_a_move(self, pos: Point):
         self.matrix[self.position.y][self.position.x] = self.visited
         self.update_position(pos)
         for i, row in enumerate(self.matrix):
@@ -68,8 +66,8 @@ class Board:
                         count += 1
                 self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
 
-    def get_user_friendly_coordinate(self) -> UserReadablePosition:
-        return UserReadablePosition(self.position.x + 1, self.dimensions.y - self.position.y)
+    def get_user_friendly_coordinate(self) -> UserReadablePoint:
+        return UserReadablePoint(self.position.x + 1, self.dimensions.y - self.position.y)
 
     def get_possible_moves(self):
         possible_moves = []
@@ -78,7 +76,7 @@ class Board:
             temp = list(zip(self.position, move))
             for i, e in enumerate(temp):
                 temp[i] = sum(list(e))
-            pos = Position(*temp)
+            pos = Point(*temp)
 
             if pos.y < 0 or pos.x < 0:
                 continue
@@ -137,16 +135,16 @@ def handle_input(msg: str, condition: Callable):
 
 
 def make_board() -> Board:
-    dimensions = Dimensions(*handle_input('Enter your board dimensions: ', lambda p: p.x > 0 and p.y > 0))
+    dimensions = Point(*handle_input('Enter your board dimensions: ', lambda p: p.x > 0 and p.y > 0))
     return Board(dimensions)
 
 
-def get_user_readable_position(board: Board, pos: Position) -> UserReadablePosition:
-    return UserReadablePosition(pos.x + 1, board.dimensions.y - pos.y)
+def get_user_readable_position(board: Board, pos: Point) -> UserReadablePoint:
+    return UserReadablePoint(pos.x + 1, board.dimensions.y - pos.y)
 
 
-def get_computer_readable_position(board: Board, pos: UserReadablePosition) -> Position:
-    return Position(pos.x - 1, board.dimensions.y - pos.y)
+def get_computer_readable_position(board: Board, pos: UserReadablePoint) -> Point:
+    return Point(pos.x - 1, board.dimensions.y - pos.y)
 
 
 def convert_coordinate(coord, row_len, row_or_col):
@@ -193,7 +191,7 @@ def main():
                 break
 
         user_input = list(map(int, input('Enter your next move: ').split()))
-        pos = Position(convert_coordinate(user_input[0], board.dimensions.y, 'col'), convert_coordinate((user_input[1]), board.dimensions.y, 'row'))
+        pos = Point(convert_coordinate(user_input[0], board.dimensions.y, 'col'), convert_coordinate((user_input[1]), board.dimensions.y, 'row'))
 
         if pos not in possible_moves:
             print('Invalid move! ')

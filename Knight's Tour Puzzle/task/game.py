@@ -156,6 +156,10 @@ def handle_input(msg: str, condition: Callable):
             if condition(point):
                 return point
             print(INVALID_INPUT_ERROR_MSG)
+        # Error will be raised if:
+        # 1. User enter non-digit. eg. 'a 5' # ValueError
+        # 2. User enter only one coordinate eg. '5' # TypeError
+        # 3. User enter more than two coordinate '1 5 6' # TypeError
         except (ValueError, TypeError):
             print(INVALID_INPUT_ERROR_MSG)
 

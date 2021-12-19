@@ -45,6 +45,7 @@ class Board:
         for move in MOVES:
             row = self.position.y + move[0]
             col = self.position.x + move[1]
+            pos = Point(col, row)
             if row < 0 or col < 0:
                 pass
             elif row >= self.dimensions.y or col >= self.dimensions.x:
@@ -52,19 +53,23 @@ class Board:
             elif self.matrix[row][col] == self.position_mark or self.matrix[row][col] == self.visited:
                 pass
             else:
-                count = 0
-                for mv in MOVES:
-                    r = row + mv[0]
-                    c = col + mv[1]
-                    if r < 0 or c < 0:
-                        continue
-                    elif c >= self.dimensions.x or r >= self.dimensions.y:
-                        continue
-                    elif self.matrix[r][c] == self.position_mark or self.matrix[r][c] == self.visited:
-                        continue
-                    else:
-                        count += 1
+                count = self.warnsdorff_count(pos)
                 self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
+
+    def warnsdorff_count(self, pos: Point):
+        count = 0
+        for move in MOVES:
+            row = pos.y + move[0]
+            col = pos.x + move[1]
+            if row < 0 or col < 0:
+                continue
+            elif col >= self.dimensions.x or row >= self.dimensions.y:
+                continue
+            elif self.matrix[row][col] == self.position_mark or self.matrix[row][col] == self.visited:
+                continue
+            else:
+                count += 1
+        return count
 
     def get_user_friendly_coordinate(self) -> UserReadablePoint:
         return UserReadablePoint(self.position.x + 1, self.dimensions.y - self.position.y)

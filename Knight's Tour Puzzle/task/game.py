@@ -69,6 +69,32 @@ class Board:
     def get_user_friendly_coordinate(self) -> UserReadablePoint:
         return UserReadablePoint(self.position.x + 1, self.dimensions.y - self.position.y)
 
+    def play(self):
+        while True:
+            possible_moves = self.get_possible_moves()
+
+            # This block of code end the game if the game is over.
+            if not possible_moves:
+                cell_number = self.dimensions.y * self.dimensions.x
+                if self.squares_visited() == cell_number:
+                    print('What a great tour! Congratulations!')
+                    break
+                else:
+                    print('No more possible moves!')
+                    print(f'Your knight visited {self.squares_visited()} squares!')
+                    break
+
+            user_input = list(map(int, input('Enter your next move: ').split()))
+            user_readable_point = UserReadablePoint(*user_input)
+            pos = Point(*get_computer_readable_position(self, user_readable_point))
+
+            if pos not in possible_moves:
+                print('Invalid move! ')
+                continue
+
+            self.make_a_move(pos)
+            print(self)
+
     def get_possible_moves(self):
         possible_moves = []
 
@@ -162,30 +188,7 @@ def main():
     board.place_knight()
     board.warnsdorff()
     print(board)
-
-    game_over = False
-    while not game_over:
-        possible_moves = board.get_possible_moves()
-
-        if not possible_moves:
-            if board.squares_visited() == board.dimensions.y * board.dimensions.x:
-                print('What a great tour! Congratulations!')
-                break
-            else:
-                print('No more possible moves!')
-                print(f'Your knight visited {board.squares_visited()} squares!')
-                break
-
-        user_input = list(map(int, input('Enter your next move: ').split()))
-        user_readable_point = UserReadablePoint(*user_input)
-        pos = Point(*get_computer_readable_position(board, user_readable_point))
-
-        if pos not in possible_moves:
-            print('Invalid move! ')
-            continue
-
-        board.make_a_move(pos)
-        print(board)
+    board.play()
 
 
 if __name__ == '__main__':

@@ -21,16 +21,19 @@ class Board:
         self.visited = ' ' * (self.cell_size - 1) + '*'
         self.matrix = [[self.placeholder for _j in range(self.dimensions.x)] for _i in range(self.dimensions.y)]
 
+    def update_position(self, pos: Position):
+        self.position = pos
+        self.matrix[self.position.y][self.position.x] = self.position_mark
+
     def place_knight(self):
         msg = "Enter the knight's starting position: "
         point = handle_input(msg, lambda p: p.x in range(1, self.dimensions.x + 1) and p.y in range(1, self.dimensions.y + 1))
-        self.position = Position(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
-        self.matrix[self.position.y][self.position.x] = self.position_mark
+        pos = Position(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
+        self.update_position(pos)
 
     def make_a_move(self, pos: Position):
         self.matrix[self.position.y][self.position.x] = self.visited
-        self.position = pos
-        self.matrix[self.position.y][self.position.x] = self.position_mark
+        self.update_position(pos)
         for i, row in enumerate(self.matrix):
             for j, cell in enumerate(row):
                 if cell == self.position_mark:

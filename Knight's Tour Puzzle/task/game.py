@@ -4,8 +4,10 @@ from collections import namedtuple
 from typing import Optional, Callable
 
 INVALID_INPUT_ERROR_MSG = 'Invalid dimensions!'
+MOVES = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]
 Dimensions = namedtuple('Dimensions', 'x y')
 Position = namedtuple('Position', 'x y')
+UserReadablePosition = namedtuple('UserReadablePosition', 'x y')
 Point = namedtuple('Point', 'x y')
 
 
@@ -19,43 +21,82 @@ class Board:
         self.visited = ' ' * (self.cell_size - 1) + '*'
         self.matrix = [[self.placeholder for _j in range(self.dimensions.x)] for _i in range(self.dimensions.y)]
 
-    def get_x_dim(self):
-        return self.dimensions.x
-
-    def get_y_dim(self):
-        return self.dimensions.y
-
     def place_knight(self):
         msg = "Enter the knight's starting position: "
         point = handle_input(msg, lambda p: p.x in range(1, self.dimensions.x + 1) and p.y in range(1, self.dimensions.y + 1))
         self.position = Position(convert_coordinate(point.x, self.dimensions.y, 'col'), convert_coordinate(point.y, self.dimensions.y, 'row'))
         self.matrix[self.position.y][self.position.x] = self.position_mark
 
+    def make_a_move(self, pos: Position):
+        self.matrix[self.position.y][self.position.x] = self.visited
+        self.position = pos
+        self.matrix[self.position.y][self.position.x] = self.position_mark
+        for i, row in enumerate(self.matrix):
+            for j, cell in enumerate(row):
+                if cell == self.position_mark:
+                    continue
+                if cell == self.visited:
+                    continue
+                self.matrix[i][j] = self.placeholder
+        self.warnsdorff()
+
     def warnsdorff(self):
-        moves = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]
-        for move in moves:
+        for move in MOVES:
             row = self.position.y + move[0]
             col = self.position.x + move[1]
             if row < 0 or col < 0:
                 pass
+            elif row >= self.dimensions.y or col >= self.dimensions.x:
+                pass
+            elif self.matrix[row][col] == self.position_mark or self.matrix[row][col] == self.visited:
+                pass
             else:
-                try:
-                    count = -1
-                    for mv in moves:
-                        r = row + mv[0]
-                        c = col + mv[1]
-                        if r < 0 or c < 0:
-                            pass
-                        elif c >= self.dimensions.x or r >= self.dimensions.y:
-                            pass
-                        else:
-                            count += 1
-                    self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
-                except IndexError:
-                    pass
+                count = 0
+                for mv in MOVES:
+                    r = row + mv[0]
+                    c = col + mv[1]
+                    if r < 0 or c < 0:
+                        continue
+                    elif c >= self.dimensions.x or r >= self.dimensions.y:
+                        continue
+                    elif self.matrix[r][c] == self.position_mark or self.matrix[r][c] == self.visited:
+                        continue
+                    else:
+                        count += 1
+                self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
 
-    def get_user_friendly_coordinate(self, pos: Position) -> str:
-        return f'row: {self.dimensions.y - pos.y}, col: {pos.x + 1}'
+    def get_user_friendly_coordinate(self) -> UserReadablePosition:
+        return UserReadablePosition(self.position.x + 1, self.dimensions.y - self.position.y)
+
+    def get_possible_moves(self):
+        possible_moves = []
+
+        for move in MOVES:
+            temp = list(zip(self.position, move))
+            for i, e in enumerate(temp):
+                temp[i] = sum(list(e))
+            pos = Position(*temp)
+
+            if pos.y < 0 or pos.x < 0:
+                continue
+            if pos.y >= self.dimensions.y or pos.x >= self.dimensions.x:
+                continue
+            if self.matrix[pos.y][pos.x] == self.position_mark:
+                continue
+            if self.matrix[pos.y][pos.x] == self.visited:
+                continue
+
+            possible_moves.append(pos)
+
+        return possible_moves
+
+    def squares_visited(self):
+        count = 0
+        for row in self.matrix:
+            for cell in row:
+                if cell == self.visited or cell == self.position_mark:
+                    count += 1
+        return count
 
     def __str__(self) -> str:
         result = []
@@ -97,6 +138,14 @@ def make_board() -> Board:
     return Board(dimensions)
 
 
+def get_user_readable_position(board: Board, pos: Position) -> UserReadablePosition:
+    return UserReadablePosition(pos.x + 1, board.dimensions.y - pos.y)
+
+
+def get_computer_readable_position(board: Board, pos: UserReadablePosition) -> Position:
+    return Position(pos.x - 1, board.dimensions.y - pos.y)
+
+
 def convert_coordinate(coord, row_len, row_or_col):
     """
     @params
@@ -125,8 +174,30 @@ def main():
     board = make_board()
     board.place_knight()
     board.warnsdorff()
-    print('Here are the possible moves:')
     print(board)
+
+    game_over = False
+    while not game_over:
+        possible_moves = board.get_possible_moves()
+
+        if not possible_moves:
+            if board.squares_visited() == board.dimensions.y * board.dimensions.x:
+                print('What a great tour! Congratulations!')
+                break
+            else:
+                print('No more possible moves!')
+                print(f'Your knight visited {board.squares_visited()} squares!')
+                break
+
+        user_input = list(map(int, input('Enter your next move: ').split()))
+        pos = Position(convert_coordinate(user_input[0], board.dimensions.y, 'col'), convert_coordinate((user_input[1]), board.dimensions.y, 'row'))
+
+        if pos not in possible_moves:
+            print('Invalid move! ')
+            continue
+
+        board.make_a_move(pos)
+        print(board)
 
 
 if __name__ == '__main__':

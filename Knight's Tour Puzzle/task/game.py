@@ -107,25 +107,28 @@ class Board:
             self.make_a_move(pos)
             print(self)
 
-    def get_possible_moves(self):
+    def get_possible_moves(self, pos: Optional[Point] = None):
         possible_moves = []
 
+        if pos is None:
+            pos = self.position
+
         for move in MOVES:
-            temp = list(zip(self.position, move))
+            temp = list(zip(pos, move))
             for i, e in enumerate(temp):
                 temp[i] = sum(list(e))
-            pos = Point(*temp)
+            new_pos = Point(*temp)
 
-            if pos.y < 0 or pos.x < 0:
+            if new_pos.y < 0 or new_pos.x < 0:
                 continue
-            if pos.y >= self.dimensions.y or pos.x >= self.dimensions.x:
+            if new_pos.y >= self.dimensions.y or new_pos.x >= self.dimensions.x:
                 continue
-            if self.matrix[pos.y][pos.x] == self.position_mark:
+            if self.matrix[new_pos.y][new_pos.x] == self.position_mark:
                 continue
-            if self.matrix[pos.y][pos.x] == self.visited:
+            if self.matrix[new_pos.y][new_pos.x] == self.visited:
                 continue
 
-            possible_moves.append(pos)
+            possible_moves.append(new_pos)
 
         return possible_moves
 

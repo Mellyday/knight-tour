@@ -59,14 +59,11 @@ class Board:
         return False
 
     def warnsdorff(self):
-        for move in MOVES:
-            row = self.position.y + move[0]
-            col = self.position.x + move[1]
-            pos = Point(col, row)
-            move_is_illegal = self.move_is_illegal(pos)
-            if not move_is_illegal:
-                count = self.warnsdorff_count(pos)
-                self.matrix[row][col] = ' ' * (self.cell_size - 1) + str(count)
+        possible_moves = self.get_possible_moves()
+        for move in possible_moves:
+            pos = Point(*move)
+            count = self.warnsdorff_count(pos)
+            self.matrix[move.y][move.x] = ' ' * (self.cell_size - 1) + str(count)
 
     def warnsdorff_count(self, pos: Point):
         count = 0

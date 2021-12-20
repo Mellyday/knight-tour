@@ -66,13 +66,7 @@ class Board:
             self.matrix[move.y][move.x] = ' ' * (self.cell_size - 1) + str(count)
 
     def warnsdorff_count(self, pos: Point):
-        count = 0
-        for move in MOVES:
-            row = pos.y + move[0]
-            col = pos.x + move[1]
-            move_is_illegal = self.move_is_illegal(Point(col, row))
-            if not move_is_illegal:
-                count += 1
+        count = len(self.get_possible_moves(pos))
         return count
 
     def get_user_friendly_coordinate(self) -> UserReadablePoint:

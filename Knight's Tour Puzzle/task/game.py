@@ -18,10 +18,15 @@ class Board:
         self.position_mark = ' ' * (self.cell_size - 1) + 'X'
         self.visited = ' ' * (self.cell_size - 1) + '*'
         self.matrix = [[self.placeholder for _j in range(self.dimensions.x)] for _i in range(self.dimensions.y)]
+        self.count = 1
 
-    def update_position(self, pos: Point):
+    def update_position(self, pos: Point, token: str = 'mark'):
         self.position = pos
-        self.matrix[self.position.y][self.position.x] = self.position_mark
+        if token == 'mark':
+            self.matrix[self.position.y][self.position.x] = self.position_mark
+        if token == 'number':
+            self.matrix[self.position.y][self.position.x] = ' ' * (self.cell_size - 1) + str(self.count)
+            self.count += 1
 
     def place_knight(self):
         msg = "Enter the knight's starting position: "

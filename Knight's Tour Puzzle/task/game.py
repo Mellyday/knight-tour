@@ -1,5 +1,6 @@
 # Write your code here
 import math
+import copy
 from collections import namedtuple
 from typing import Optional, Callable
 
@@ -25,7 +26,7 @@ class Board:
         if token == 'mark':
             self.matrix[self.position.y][self.position.x] = self.position_mark
         if token == 'number':
-            self.matrix[self.position.y][self.position.x] = ' ' * (self.cell_size - 1) + str(self.count)
+            self.matrix[self.position.y][self.position.x] = str(self.count).rjust(self.cell_size)
             self.count += 1
 
     def place_knight(self):
@@ -33,6 +34,71 @@ class Board:
         point = handle_input(msg, lambda p: p.x in range(1, self.dimensions.x + 1) and p.y in range(1, self.dimensions.y + 1))
         pos = Point(*get_computer_readable_position(self, point))
         self.update_position(pos)
+
+    def pc_get_possible_moves(self, pos: Optional[Point] = None):
+        possible_moves = []
+
+        if pos is None:
+            pos = self.position
+
+        for move in MOVES:
+            temp = list(zip(pos, move))
+            for i, e in enumerate(temp):
+                temp[i] = sum(list(e))
+            new_pos = Point(*temp)
+
+            if new_pos.y < 0 or new_pos.x < 0:
+                continue
+            if new_pos.y >= self.dimensions.y or new_pos.x >= self.dimensions.x:
+                continue
+
+            if self.matrix[new_pos.y][new_pos.x] == self.placeholder:
+                possible_moves.append(new_pos)
+
+        return possible_moves
+
+    def check_victory(self):
+        for row in self.matrix:
+            for cell in row:
+                if cell == self.placeholder:
+                    return False
+        return True
+
+    def undo_position(self, last_pos):
+        self.matrix[self.position.y][self.position.x] = self.placeholder
+        self.position = last_pos
+        self.count -= 1
+
+    def solve_no_mutation(self):
+        bo = copy.deepcopy(self)
+        possible_moves = bo.pc_get_possible_moves()
+
+        if bo.check_victory():
+            return True
+
+        for move in possible_moves:
+            saved_pos = Point(*bo.position)
+            bo.update_position(move, 'number')
+            if bo.solve():
+                return True
+            bo.undo_position(saved_pos)
+
+        return False
+
+    def solve(self):
+        possible_moves = self.pc_get_possible_moves()
+
+        if self.check_victory():
+            return True
+
+        for move in possible_moves:
+            saved_pos = Point(*self.position)
+            self.update_position(move, 'number')
+            if self.solve():
+                return True
+            self.undo_position(saved_pos)
+
+        return False
 
     def make_a_move(self, pos: Point):
         self.matrix[self.position.y][self.position.x] = self.visited
@@ -45,23 +111,6 @@ class Board:
                     continue
                 self.matrix[i][j] = self.placeholder
         self.warnsdorff()
-
-    def move_is_illegal(self, pos: Point):
-        """
-        IMPORTANT! this does not flag all illegal moves. It only flag illegal moves in one of the following cases:
-        1. The position is not outside the board (eg. if pos.x is less than 0 or larger than the dimension of the board, then it's out of bounds)
-        2. The position has not been previously visited.
-        3. The position is not our current location
-        :param pos:
-        :return:
-        """
-        if pos.x < 0 or pos.y < 0:
-            return True
-        elif pos.x >= self.dimensions.x or pos.y >= self.dimensions.y:
-            return True
-        elif self.matrix[pos.y][pos.x] == self.position_mark or self.matrix[pos.y][pos.x] == self.visited:
-            return True
-        return False
 
     def warnsdorff(self):
         possible_moves = self.get_possible_moves()
@@ -97,7 +146,7 @@ class Board:
             pos = Point(*get_computer_readable_position(self, user_readable_point))
 
             if pos not in possible_moves:
-                print('Invalid move! ')
+                print('Invalid move!', end='')
                 continue
 
             self.make_a_move(pos)
@@ -201,9 +250,29 @@ def count_digits(num):
 def main():
     board = make_board()
     board.place_knight()
-    board.warnsdorff()
-    print(board)
-    board.play()
+
+    while True:
+        answer = input('Do you want to try the puzzle? ')
+
+        if answer == 'y':
+            if board.solve_no_mutation():
+                board.warnsdorff()
+                print(board)
+                board.play()
+            else:
+                print('No solution exists!')
+            break
+
+        if answer == 'n':
+            board.update_position(board.position, 'number')
+            if board.solve():
+                print("Here's the solution!")
+                print(board)
+            else:
+                print('No solution exists!')
+            break
+
+        print('Invalid input!')
 
 
 if __name__ == '__main__':

@@ -110,14 +110,16 @@ class Board:
                 if cell == self.visited:
                     continue
                 self.matrix[i][j] = self.placeholder
-        self.warnsdorff()
+        self.print_warnsdorff()
 
-    def warnsdorff(self):
-        possible_moves = self.get_possible_moves()
+    def print_warnsdorff(self):
+        bo = copy.deepcopy(self)
+        possible_moves = bo.get_possible_moves()
         for move in possible_moves:
             pos = Point(*move)
-            count = self.warnsdorff_count(pos)
-            self.matrix[move.y][move.x] = ' ' * (self.cell_size - 1) + str(count)
+            count = bo.warnsdorff_count(pos)
+            bo.matrix[move.y][move.x] = ' ' * (bo.cell_size - 1) + str(count)
+        print(bo)
 
     def warnsdorff_count(self, pos: Point):
         count = len(self.get_possible_moves(pos))
@@ -150,7 +152,6 @@ class Board:
                 continue
 
             self.make_a_move(pos)
-            print(self)
 
     def get_possible_moves(self, pos: Optional[Point] = None):
         possible_moves = []
@@ -256,8 +257,7 @@ def main():
 
         if answer == 'y':
             if board.solve_no_mutation():
-                board.warnsdorff()
-                print(board)
+                board.print_warnsdorff()
                 board.play()
             else:
                 print('No solution exists!')

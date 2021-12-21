@@ -35,7 +35,7 @@ class Board:
         pos = Point(*get_computer_readable_position(self, point))
         self.update_position(pos)
 
-    def pc_get_possible_moves(self, pos: Optional[Point] = None):
+    def get_possible_moves(self, pos: Optional[Point] = None):
         possible_moves = []
 
         if pos is None:
@@ -71,7 +71,7 @@ class Board:
 
     def solve_no_mutation(self):
         bo = copy.deepcopy(self)
-        possible_moves = bo.pc_get_possible_moves()
+        possible_moves = bo.get_possible_moves()
 
         if bo.check_victory():
             return True
@@ -86,7 +86,7 @@ class Board:
         return False
 
     def solve(self):
-        possible_moves = self.pc_get_possible_moves()
+        possible_moves = self.get_possible_moves()
 
         if self.check_victory():
             return True
@@ -152,31 +152,6 @@ class Board:
                 continue
 
             self.make_a_move(pos)
-
-    def get_possible_moves(self, pos: Optional[Point] = None):
-        possible_moves = []
-
-        if pos is None:
-            pos = self.position
-
-        for move in MOVES:
-            temp = list(zip(pos, move))
-            for i, e in enumerate(temp):
-                temp[i] = sum(list(e))
-            new_pos = Point(*temp)
-
-            if new_pos.y < 0 or new_pos.x < 0:
-                continue
-            if new_pos.y >= self.dimensions.y or new_pos.x >= self.dimensions.x:
-                continue
-            if self.matrix[new_pos.y][new_pos.x] == self.position_mark:
-                continue
-            if self.matrix[new_pos.y][new_pos.x] == self.visited:
-                continue
-
-            possible_moves.append(new_pos)
-
-        return possible_moves
 
     def squares_visited(self):
         count = 0
